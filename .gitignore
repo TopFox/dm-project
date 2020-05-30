@@ -1,0 +1,47 @@
+beijing_17_18_aq.csv
+beijing_17_18_meo.csv
+beijing_201802_201803_aq.csv
+beijing_201802_201803_me.csv
+Beijing_AirQuality_Stations_en.xlsx
+Beijing_grid_weather_station.csv
+Beijing_historical_meo_grid.csv
+London_AirQuality_Stations.csv
+London_grid_weather_station.csv
+London_historical_aqi_forecast_stations_20180331.csv
+London_historical_aqi_other_stations_20180331.csv
+London_historical_meo_grid.csv
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# OS generated files #
+######################
+DS_Store
+.DS_Store
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
