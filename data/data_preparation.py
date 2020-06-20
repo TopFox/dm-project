@@ -36,11 +36,10 @@ def data_split() :
         aq_test.to_csv("prepared_data/%s_aq_test_data.csv" %(city))
 
 def prepare_data():
-    # Preparation of the data
     aq_data_preparation("bj")
     aq_data_preparation("ld")
-    meo_data_preprocess("bj")
-    meo_data_preprocess("ld")
+    #meo_data_preprocess("bj")
+    #meo_data_preprocess("ld")
 
     data_split()		
 
