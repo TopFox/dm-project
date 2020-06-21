@@ -254,6 +254,11 @@ def aq_data_preparation(city):
 
     aq_stations_merged.sort_index(inplace=True)
 
+    if city == 'bj':
+        column_names_without_aq = []
+        for coln_name in aq_stations_merged.columns :
+            column_names_without_aq.append(coln_name.replace('_aq',''))
+        aq_stations_merged.columns = column_names_without_aq
     # We save the cleaned data in a csv file
     aq_stations_merged.to_csv("./prepared_data/%s_aq_data.csv" %(city))
     print("Air quality data of %s prepared ！" %(city))
