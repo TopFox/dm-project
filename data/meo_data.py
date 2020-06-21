@@ -150,6 +150,11 @@ def meo_data_preprocess(city="bj"):
 
     # We concat the data and save it in a csv file
     meo_stations_merged = pd.concat(list(meo_stations.values()), axis=1)
+    if city == 'bj':
+        column_names_without_aq = []
+        for coln_name in meo_stations_merged.columns :
+            column_names_without_aq.append(coln_name.replace('_aq',''))
+        meo_stations_merged.columns = column_names_without_aq
     meo_stations_merged.sort_index(inplace=True)
     meo_stations_merged["date"] = pd.to_datetime(meo_stations_merged.index)
     meo_stations_merged.set_index("date", inplace=True)
