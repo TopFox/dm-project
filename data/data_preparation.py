@@ -1,9 +1,8 @@
 from data.aq_data import aq_data_preparation
-from data.meo_data import meo_data_preprocess
+from data.meo_data import meo_data_preprocess, generate_nearest_stations
+
 import pandas as pd
 import datetime
-
-
 
 def data_split() :
     cities = ["bj","ld"]
@@ -38,8 +37,8 @@ def data_split() :
 def prepare_data():
     aq_data_preparation("bj")
     aq_data_preparation("ld")
-    #meo_data_preprocess("bj")
-    #meo_data_preprocess("ld")
+    meo_data_preprocess("bj")
+    meo_data_preprocess("ld")
 
     data_split()		
-
+    print('Data splitted into training and test sets !')

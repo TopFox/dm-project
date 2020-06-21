@@ -13,6 +13,12 @@ def load_bj_aq_data():
         bj_aq_data = pd.read_csv(aq_file)
         if "id" in bj_aq_data.columns : 
             bj_aq_data.drop("id", axis=1, inplace=True)
+        if "NO2" in bj_aq_data.columns : 
+            bj_aq_data.drop("NO2", axis=1, inplace=True)
+        if "SO2" in bj_aq_data.columns : 
+            bj_aq_data.drop("SO2", axis=1, inplace=True)
+        if "CO" in bj_aq_data.columns : 
+            bj_aq_data.drop("CO", axis=1, inplace=True)
         bj_aq_datas.append(bj_aq_data)
 
     bj_aq_merged_data = pd.concat(bj_aq_datas, ignore_index=True)
@@ -34,6 +40,8 @@ def load_ld_aq_data():
         for column_name in ld_aq_data.columns :
             if 'Unnamed:' in column_name : 
                 ld_aq_data.drop(column_name, axis=1, inplace=True)
+            if 'NO2 (ug/m3)' in column_name :
+                ld_aq_data.drop(column_name, axis=1, inplace=True)
 
          # We need the names of the column to be the same for London and Beijing data
         adapted_name_pairs = {}
@@ -46,7 +54,6 @@ def load_ld_aq_data():
         adapted_name_pairs['MeasurementDateGMT'] = 'utc_time'
         adapted_name_pairs["PM2.5 (ug/m3)"] = "PM2.5"
         adapted_name_pairs["PM10 (ug/m3)"] = "PM10"
-        adapted_name_pairs["NO2 (ug/m3)"] = "NO2"
 
         if "id" in ld_aq_data.columns : 
             ld_aq_data.drop("id", axis=1, inplace=True)
@@ -65,10 +72,10 @@ def load_ld_aq_data():
 def load_city_aq_data(aq_dataset):
     # Returns 4 objects : 
     # - aq_dataset : the input dataset where the utc_time column has been replaced by a column named time with dates
-    # instead of strings
-    # stations : a list of all the stations' names
-    # aq_stations a dictionnary where you can find for each station its air quality
-    # aq_stations_merged : dataframe with the air quality of each cities
+    #                instead of strings
+    # - stations : a list of all the stations' names
+    # - aq_stations a dictionnary where you can find for each station its air quality
+    # - aq_stations_merged : dataframe with the air quality of each cities
 
     # We need a real date and not the just a string
     aq_dataset["time"] = pd.to_datetime(aq_dataset['utc_time'])
@@ -104,8 +111,8 @@ def load_city_aq_data(aq_dataset):
     return aq_dataset, stations, aq_stations, aq_stations_merged
 
 def get_feature_value_of_nearest_city(station_name, feature_name, near_stations, row):
-    near_stations = near_stations[station_name]    # A list of nearest stations
-    for station in near_stations :                 # 在最近的站中依次寻找非缺失值
+    near_stations = near_stations[station_name]
+    for station in near_stations :
         feature = station + "_" +feature_name
         if not pd.isnull(row[feature]):
             return row[feature]
@@ -182,7 +189,7 @@ def aq_data_preparation(city):
     # For london, we drop the useless stations
     if city == "ld" :     
         stations_to_predict = ['BL0','CD1','CD9','GN0','GN3','GR4','GR9','HV1','KF1','LW2','MY7','ST5','TH4']
-        features = ['NO2', 'PM10', 'PM2.5']
+        features = ['PM10', 'PM2.5']
 
         all_features = []
         for station in stations_to_predict :
@@ -249,4 +256,4 @@ def aq_data_preparation(city):
 
     # We save the cleaned data in a csv file
     aq_stations_merged.to_csv("./prepared_data/%s_aq_data.csv" %(city))
-    print("Air quality data of %s completed ！" %(city))
+    print("Air quality data of %s prepared ！" %(city))
