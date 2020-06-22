@@ -199,8 +199,6 @@ def aq_data_preparation(city):
 
         aq_stations_merged = aq_stations_merged[all_features]
 
-
-    keep_hours = []
     drop_hours = []
 
     # We store the missinbg hours in an array
@@ -244,7 +242,6 @@ def aq_data_preparation(city):
         if combined_row > 5 :
             drop_hours.append(hour)
         else :
-            keep_hours.append(hour)
             delata_values = after_row - combined_step
             aq_stations_merged.loc[hour] = combined_step + (before_step/combined_row) * delata_values        
 
