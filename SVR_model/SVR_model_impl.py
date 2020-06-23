@@ -8,7 +8,6 @@ from datetime import datetime
 from sklearn.model_selection import train_test_split
 from sklearn.svm import SVR
 
-
 #matplotlib notebook
 import matplotlib.pyplot as plt
 import warnings
@@ -19,9 +18,6 @@ from sklearn.metrics import mean_squared_error
 from sklearn.metrics import r2_score
 from keras.preprocessing.sequence import TimeseriesGenerator
 
-
-
-
 def series_to_supervised(data, n_in=1, n_out=1, dropnan=True):
     n_vars = 1 if type(data) is list else data.shape[1]
     df = pd.DataFrame(data)
@@ -29,10 +25,12 @@ def series_to_supervised(data, n_in=1, n_out=1, dropnan=True):
     # input sequence (t-n, ... t-1)
     for i in range(n_in, 0, -1):
         cols.append(df.shift(i))
+        #cols.append(df[data.shape[0]-i:])
         names += [('var%d(t-%d)' % (j+1, i)) for j in range(n_vars)]
     # forecast sequence (t, t+1, ... t+n)
     for i in range(0, n_out):
         cols.append(df.shift(-i))
+        #cols.append(df[data.shape[0]-i:])
         if i == 0:
             names += [('var%d(t)' % (j+1)) for j in range(n_vars)]
         else:
@@ -45,22 +43,17 @@ def series_to_supervised(data, n_in=1, n_out=1, dropnan=True):
         agg.dropna(inplace=True)
     return agg
 
-      
-
-
-
 def predict_SVR():
     cities = ['ld','bj']
     for city in cities:
+        aq_test_data = pd.read_csv("./prepared_data/%s_aq_test_data.csv" %(city))
         aq_train_data = pd.read_csv('./prepared_data/%s_aq_train_data.csv' %(city))
         meo_train_data = pd.read_csv("./prepared_data/%s_meo_train_data.csv" %(city))
-        aq_test_data = pd.read_csv("./prepared_data/%s_aq_test_data.csv" %(city))   
 
         station_names = get_stations_names(aq_train_data.columns)
 
         pred = []
         for station_name in station_names:
-            print(station_name)
             for col in aq_train_data.columns:
                 splitted_col = col.split('_')
                 if station_name == splitted_col[0]:
@@ -104,9 +97,6 @@ def SVRperso(dataset):
     # frame as supervised learning
     reframed = series_to_supervised(values, 48, 1)
     
-    # We select only the last 48 hours
-    test = reframed.tail(48)
-    
     values = reframed.values
     scaler = StandardScaler()
     scaled_features = scaler.fit_transform(values[:,:-1])
@@ -114,42 +104,21 @@ def SVRperso(dataset):
     values = np.column_stack((scaled_features, scaled_label))
 
     
-    test =values[-48:,:]
-    
-    n_train_hours = round(np.size(values,0)*2/3)
-    train = values#[:n_train_hours, :]
-    #valid = values[n_train_hours:, :]
+    test = values[-48:,:]
+
+    train = values
   
     train_X, train_y = train[:, :-1], train[:, -1]
     test_X, test_y = test[:, :-1], test[:, -1]
-    
-    
    
     x= train_X
     y= train_y
 
 
-    regr = SVR(C=2,epsilon=0.1,kernel='rbf',gamma=0.1,tol=0.001, verbose=0, shrinking=True, max_iter = 10000)
-
+    regr = SVR(C=2,epsilon=0.01,kernel='rbf',gamma=0.1,tol=0.001, verbose=0, shrinking=True, max_iter = 10000)
     regr.fit(x,y)
     data_pred = regr.predict(test_X)
-    y_pred = scaler.inverse_transform(data_pred.reshape(-1,1))
-    y_inv = scaler.inverse_transform(test_y.reshape(-1,1))
-    
-
-    mse = mean_squared_error(y_inv, y_pred)
-    rmse = np.sqrt(mse)
-   
-    def plot_predicted(predicted_data, true_data):
-        fig, ax = plt.subplots(figsize=(5,5))
-        ax.set_title('Prediction vs. Actual after 100 epochs of training')
-        ax.plot(true_data, label='True Data', color='green', linewidth='3')
-
-        ax.plot(predicted_data, label='Prediction', color='red', linewidth='2')
-        plt.legend()
-        plt.show()
-
-    
+    y_pred = scaler.inverse_transform(data_pred.reshape(-1,1)) 
 
     return y_pred
         

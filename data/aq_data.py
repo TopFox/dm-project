@@ -75,7 +75,7 @@ def load_city_aq_data(aq_dataset):
     #                instead of strings
     # - stations : a list of all the stations' names
     # - aq_stations a dictionnary where you can find for each station its air quality
-    # - aq_stations_merged : dataframe with the air quality of each cities
+    # - aq_stations_merged : dataframe with the air quality of each station
 
     # We need a real date and not the just a string
     aq_dataset["time"] = pd.to_datetime(aq_dataset['utc_time'])
@@ -199,8 +199,6 @@ def aq_data_preparation(city):
 
         aq_stations_merged = aq_stations_merged[all_features]
 
-    drop_hours = []
-
     # We store the missinbg hours in an array
     time = datetime.datetime.strptime(aq_stations_merged.index.min(), '%Y-%m-%d %H:%M:%S')
     missing_times = []
@@ -238,18 +236,9 @@ def aq_data_preparation(city):
         
         combined_row = before_step + after_step
 
-        # If the combined steps are more than 5, we drop the hours, else we inteprolate
-        """ if combined_row > 5 :
-            drop_hours.append(hour)
-        else :
-            delata_values = after_row - combined_step
-            aq_stations_merged.loc[hour] = combined_step + (before_step/combined_row) * delata_values """
+        # We interpolate
         delata_values = after_row - combined_step
         aq_stations_merged.loc[hour] = combined_step + (before_step/combined_row) * delata_values       
-
-    # For each hour that we need to drop, we replace the whole line with a serie of nan values
-    for hour in drop_hours:
-        aq_stations_merged.loc[hour] = pd.Series({key:np.nan for key in aq_stations_merged.columns})
 
     aq_stations_merged.sort_index(inplace=True)
 

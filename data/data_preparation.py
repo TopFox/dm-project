@@ -8,9 +8,9 @@ def data_split() :
     cities = ["bj","ld"]
 
     for city in cities:
-        start_training_date = "2017-1-1 14:00"
+        start_training_date = "2017-1-1 00:00"
         start_testing_date = "2018-3-21 0:00"
-        end_testing_date = "2018-3-22 23:00"
+        end_date = "2018-3-22 23:00"
 
         meo = pd.read_csv("./prepared_data/%s_meo_data.csv" %(city))
         aq = pd.read_csv("./prepared_data/%s_aq_data.csv" %(city))		
@@ -21,11 +21,11 @@ def data_split() :
         meo.set_index("date", inplace=True)
         aq.set_index("time", inplace=True)
 
-        aq_train = aq.loc[start_training_date:start_testing_date] 
-        meo_train = meo.loc[start_training_date:start_testing_date]
+        aq_train = aq.loc[start_training_date:end_date] 
+        meo_train = meo.loc[start_training_date:end_date]
 
-        aq_test = aq.loc[start_testing_date:end_testing_date]
-        meo_test = meo.loc[start_testing_date:end_testing_date]
+        aq_test = aq.loc[start_testing_date:end_date]
+        meo_test = meo.loc[start_testing_date:end_date]
 
         aq_train.to_csv("prepared_data/%s_aq_train_data.csv" %(city))
         meo_train.to_csv("prepared_data/%s_meo_train_data.csv" %(city))		
