@@ -139,7 +139,7 @@ def SVRperso(dataset):
     y= train_y
 
 
-    regr = SVR(C=2.0,epsilon=0.1,kernel='rbf',gamma=0.5,tol=0.001, verbose=0, shrinking=True, max_iter = 100000)
+    regr = SVR(C=5000,epsilon=0.001,kernel='rbf',gamma=0.1,tol=0.001, verbose=0, shrinking=True, max_iter = 100000)
 
     regr.fit(x,y)
     data_pred = regr.predict(test_X)
