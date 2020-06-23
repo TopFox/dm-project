@@ -238,12 +238,14 @@ def aq_data_preparation(city):
         
         combined_row = before_step + after_step
 
-        # If the combined steps are more than 5, we drop the hours, ele we inteprolate
-        if combined_row > 5 :
+        # If the combined steps are more than 5, we drop the hours, else we inteprolate
+        """ if combined_row > 5 :
             drop_hours.append(hour)
         else :
             delata_values = after_row - combined_step
-            aq_stations_merged.loc[hour] = combined_step + (before_step/combined_row) * delata_values        
+            aq_stations_merged.loc[hour] = combined_step + (before_step/combined_row) * delata_values """
+        delata_values = after_row - combined_step
+        aq_stations_merged.loc[hour] = combined_step + (before_step/combined_row) * delata_values       
 
     # For each hour that we need to drop, we replace the whole line with a serie of nan values
     for hour in drop_hours:
