@@ -3,14 +3,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 def  compare_predictions(method):
-    ld_aq_test_data = pd.read_csv('./prepared_data/ld_aq_test_data.csv')
-    ld_aq_prediction = pd.read_csv('./prediction/%s_ld_aq.csv' %(method))
-    bj_aq_test_data = pd.read_csv('./prepared_data/bj_aq_test_data.csv')
-    bj_aq_prediction = pd.read_csv('./prediction/%s_bj_aq.csv' %(method))
+    ld_aq_test_data = pd.read_csv('./prepared_data/ld_aq_test_data.csv').sort_index(axis=1).drop('time', axis=1)
+    ld_aq_prediction = pd.read_csv('./prediction/%s_ld_aq.csv' %(method)).sort_index(axis=1).drop('time', axis=1)
+    bj_aq_test_data = pd.read_csv('./prepared_data/bj_aq_test_data.csv').sort_index(axis=1).drop('time', axis=1)
+    bj_aq_prediction = pd.read_csv('./prediction/%s_bj_aq.csv' %(method)).sort_index(axis=1).drop('time', axis=1)
 
-
-    ld_mse_city_polluant = np.sqrt(np.mean((ld_aq_test_data.drop('time', axis=1) - ld_aq_prediction.drop('time', axis=1))**2))
-    bj_mse_city_polluant = np.sqrt(np.mean((bj_aq_test_data.drop('time', axis=1) - bj_aq_prediction.drop('time', axis=1))**2))
+    ld_mse_city_polluant = np.sqrt(np.mean((ld_aq_test_data - ld_aq_prediction)**2))
+    bj_mse_city_polluant = np.sqrt(np.mean((bj_aq_test_data - bj_aq_prediction)**2))
 
     ld_PM25_array = []
     ld_PM10_array = []
@@ -47,9 +46,9 @@ def  compare_predictions(method):
     axs[1,0].legend(loc='best')
 
 
-    bj_aq_test_data['pinggu_aq_PM2.5'].plot(ax=axs[0,0], label='Actual pollution')
-    bj_aq_prediction['pinggu_aq_PM2.5'].plot(ax=axs[0,0], label='Prediction')
-    axs[0,0].set_title('PM 2.5 variations in the station pinggu_aq')
+    bj_aq_test_data['pinggu_PM2.5'].plot(ax=axs[0,0], label='Actual pollution')
+    bj_aq_prediction['pinggu_PM2.5'].plot(ax=axs[0,0], label='Prediction')
+    axs[0,0].set_title('PM 2.5 variations in the station pinggu')
     axs[0,0].set_xlabel('Time (in hours)')
     axs[0,0].set_ylabel('PM 2.5 (in microgram/m^3')
     axs[0,0].legend(loc='best')
@@ -61,17 +60,17 @@ def  compare_predictions(method):
     axs[1,1].set_ylabel('PM 10 (in microgram/m^3')
     axs[1,1].legend(loc='best')
 
-    bj_aq_test_data['pinggu_aq_PM10'].plot(ax=axs[0,1], label='Actual pollution')
-    bj_aq_prediction['pinggu_aq_PM10'].plot(ax=axs[0,1], label='Prediction')
-    axs[0,1].set_title('PM 10 variations in the station pinggu_aq')
+    bj_aq_test_data['pinggu_PM10'].plot(ax=axs[0,1], label='Actual pollution')
+    bj_aq_prediction['pinggu_PM10'].plot(ax=axs[0,1], label='Prediction')
+    axs[0,1].set_title('PM 10 variations in the station pinggu')
     axs[0,1].set_xlabel('Time (in hours)')
     axs[0,1].set_ylabel('PM 10 (in microgram/m^3')
     axs[0,1].legend(loc='best')
 
 
-    bj_aq_test_data['pinggu_aq_O3'].plot(ax=axs[0,2], label='Actual pollution')
-    bj_aq_prediction['pinggu_aq_O3'].plot(ax=axs[0,2], label='Prediction')
-    axs[0,2].set_title('O3 variations in the station pinggu_aq')
+    bj_aq_test_data['pinggu_O3'].plot(ax=axs[0,2], label='Actual pollution')
+    bj_aq_prediction['pinggu_O3'].plot(ax=axs[0,2], label='Prediction')
+    axs[0,2].set_title('O3 variations in the station pinggu')
     axs[0,2].set_xlabel('Time (in hours)')
     axs[0,2].set_ylabel('O3 (in microgram/m^3')
     axs[0,2].legend(loc='best')
