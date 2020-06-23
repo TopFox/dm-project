@@ -7,6 +7,8 @@ import keras
 import pandas_profiling
 from datetime import datetime
 from sklearn.model_selection import train_test_split
+from sklearn.svm import SVR
+
 
 #matplotlib inline
 import matplotlib.pyplot as plt
@@ -18,6 +20,7 @@ from sklearn.preprocessing import OneHotEncoder
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error
+from sklearn.metrics import r2_score
 from keras.preprocessing.sequence import TimeseriesGenerator
 from keras.models import Sequential
 from keras.layers import Dense, LSTM, SimpleRNN
@@ -52,7 +55,7 @@ def series_to_supervised(data, n_in=1, n_out=1, dropnan=True):
 
 def main():
 
-    ld()
+    #ld()
     bj()
 
 def ld():
@@ -115,17 +118,19 @@ def bj():
     pred = []
     for aq in range(0,len(daq)-1):
         
-        l=[daq[aq][0]]
-        l.append(dmeo[aq][0])
+        l=[dmeo[aq][0]]
+        
         l.append(dmeo[aq+35][0])
         l.append(dmeo[aq+70][0])
         l.append(dmeo[aq+105][0])
         l.append(dmeo[aq+140][0])
+        l.append(daq[aq][0])
         print(daq[aq][0])
        
        
         df=pd.concat(l,axis=1)
         pred.append(LSTMperso(df))
+        print(vagin)
     
     df = pd.DataFrame.from_records(pred)
     df.to_csv('./prediction/LSTM_bj_aq.csv')
@@ -136,9 +141,6 @@ def bj():
 
 
 
-
-def parse(x):
-    return datetime.strptime(x, '%Y %m %d %H')
 
 def trigaz(data):
     if data.columns[0].split('_')[0] == 'BL0':
@@ -381,7 +383,79 @@ def tristation(data):
 
 
             
+def SVRperso(dataset):
 
+    # maybe a changer selon arnaud
+    # manually specify column names
+    dataset.columns = ['PM2.5', 'temp', 'press','humitidy', 'wnd_dir', 'wnd_spd']
+    dataset.index.name = 'date'
+    # mark all NA values with 0
+    dataset['PM2.5'].fillna(0, inplace=True)
+
+    values = dataset.values
+   
+    # integer encode direction
+    #encoder = LabelEncoder()
+    #values[:,4] = encoder.fit_transform(values[:,4])
+    # ensure all data is float
+    values = values.astype('float32')
+    # normalize features
+
+    # frame as supervised learning
+    reframed = series_to_supervised(values, 48, 1)
+    # drop columns we don't want to predict
+    reframed.drop(reframed.columns[[-2,-3,-4,-5,-6]], axis=1, inplace=True)
+    
+    
+    
+    test = reframed.tail(48)
+    
+    values = reframed.values
+    scaler = StandardScaler()
+    scaled_features = scaler.fit_transform(values[:,:-1])
+    scaled_label = scaler.fit_transform(values[:,-1].reshape(-1,1))
+    values = np.column_stack((scaled_features, scaled_label))
+
+    valuestest = test.values
+    scaler = StandardScaler()
+    scaled_features = scaler.fit_transform(valuestest[:,:-1])
+    scaled_label = scaler.fit_transform(valuestest[:,-1].reshape(-1,1))
+    valuestest = np.column_stack((scaled_features, scaled_label))
+
+
+
+    n_train_hours = round(np.size(values,0)*2/3)
+    train = values[:n_train_hours, :]
+    valid = values[n_train_hours:, :]
+    # split into input and outputs
+    # features take all values except the var1
+  
+    train_X, train_y = train[:, :-1], train[:, -1]
+    test_X, test_y = valuestest[:, :-1], valuestest[:, -1]
+    validX, validY = valid[:, :-1], valid[:, -1]
+    # reshape input to be 3D [samples, timesteps, features]
+    
+    # au dessus risque de changement selon arnaud
+
+    x= train_X
+    y= train_y
+    print(x.shape)
+    print(test_X.shape)
+
+    regr = SVR(C=2.0,epsilon=0.1,kernel='rbf',gamma=0.5,tol=0.001, verbose=1, shrinking=True, max_iter = 10000)
+
+    regr.fit(x,y)
+    data_pred = regr.predict(test_X)
+    y_pred = scaler.inverse_transform(data_pred.reshape(-1,1))
+    y_inv = scaler.inverse_transform(test_y.reshape(-1,1))
+    
+
+    mse = mean_squared_error(y_inv, y_pred)
+    rmse = np.sqrt(mse)
+    print('MSE : {:.4f}'.format(mse))
+    print('RMSE : {:.4f}'.format(rmse))
+    print('variance : {:2f}'.format(r2_score(y_inv,y_pred)))
+    return y_inv
         
 
             
@@ -449,7 +523,7 @@ def LSTMperso(dataset):
     model.compile(loss='mae',optimizer='adam')
     start = time.time()
     history = model.fit(train_X, train_y, epochs=25, batch_size=72, validation_data=(validX, validY), verbose=0, shuffle=False)
-
+    
     #plt.plot(history.history['loss'], label='train')
     #plt.plot(history.history['val_loss'], label='test')
     #plt.legend()
