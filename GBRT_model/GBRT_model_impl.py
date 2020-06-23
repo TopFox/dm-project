@@ -7,7 +7,7 @@ import keras
 from datetime import datetime
 from sklearn.model_selection import train_test_split
 from sklearn.svm import SVR
-
+from sklearn import ensemble, datasets
 
 #matplotlib notebook
 import matplotlib.pyplot as plt
@@ -18,7 +18,6 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error
 from sklearn.metrics import r2_score
 from keras.preprocessing.sequence import TimeseriesGenerator
-
 
 
 
@@ -49,7 +48,7 @@ def series_to_supervised(data, n_in=1, n_out=1, dropnan=True):
 
 
 
-def predict_SVR():
+def predict_GBRT():
     cities = ['ld','bj']
     for city in cities:
         aq_train_data = pd.read_csv('./prepared_data/%s_aq_train_data.csv' %(city))
@@ -71,9 +70,10 @@ def predict_SVR():
                             list_columns.append(meo_train_data[meo_col])
                     list_columns.append(aq_train_data[col])
                     df = pd.concat(list_columns, axis=1)
-                    y_pred = np.flipud(SVRperso(df))
+                    y_pred = np.flipud(GBRTperso(df))
                     y_pred = np.append(col,y_pred)
                     pred.append(y_pred)
+                    print(vagine)
                     
         df_pred_test = pd.DataFrame(pred).T
         time_column = aq_test_data['time']
@@ -93,9 +93,9 @@ def get_stations_names(columns):
     station_names = sorted(set(station_names_with_duplicates))
     station_names.remove('time')
     return station_names
-            
-def SVRperso(dataset):
-    # manually specify column names
+          
+
+def GBRTperso(dataset):
     dataset.columns = ['temp', 'press','humitidy', 'wnd_dir', 'wnd_spd', 'Pollution']
     dataset.index.name = 'date'
 
@@ -123,36 +123,14 @@ def SVRperso(dataset):
     train_X, train_y = train[:, :-1], train[:, -1]
     test_X, test_y = test[:, :-1], test[:, -1]
     
-    
+    params = {'n_estimators':500,'max_depth': 4, 'min_samples_split': 5, 'learning_rate': 0.01,'loss':'ls'}
    
     x= train_X
     y= train_y
 
-
-    regr = SVR(C=2,epsilon=0.1,kernel='rbf',gamma=0.1,tol=0.001, verbose=0, shrinking=True, max_iter = 10000)
-
-    regr.fit(x,y)
-    data_pred = regr.predict(test_X)
-    y_pred = scaler.inverse_transform(data_pred.reshape(-1,1))
-    y_inv = scaler.inverse_transform(test_y.reshape(-1,1))
-    
-
-    mse = mean_squared_error(y_inv, y_pred)
-    rmse = np.sqrt(mse)
-   
-    def plot_predicted(predicted_data, true_data):
-        fig, ax = plt.subplots(figsize=(5,5))
-        ax.set_title('Prediction vs. Actual after 100 epochs of training')
-        ax.plot(true_data, label='True Data', color='green', linewidth='3')
-
-        ax.plot(predicted_data, label='Prediction', color='red', linewidth='2')
-        plt.legend()
-        plt.show()
-
-    
-
-    return y_pred
-        
-
-            
-    
+    reg = ensemble.GradientBoostingRegressor(**params)
+    reg.fit(x,y)
+    pred = reg.predict(test_X)
+    mse = mean_squared_error(test_y,pred )
+    print(mse)
+    return pred
