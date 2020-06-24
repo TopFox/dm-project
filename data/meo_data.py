@@ -139,11 +139,8 @@ def meo_data_preprocess(city="bj"):
             
                 combined_steps = before_step + after_step
             
-                if combined_steps <= 5 :
-                    delata_values = after_row - before_row
-                    df.loc[time_str] = before_row + (before_step/combined_steps) * delata_values
-                else :
-                    df.loc[time_str] = nan_series
+                delata_values = after_row - before_row
+                df.loc[time_str] = before_row + (before_step/combined_steps) * delata_values
             
             time += datetime.timedelta(hours=1)
         meo_stations[station] = df

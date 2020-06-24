@@ -18,19 +18,17 @@ from sklearn.metrics import mean_squared_error
 from sklearn.metrics import r2_score
 from keras.preprocessing.sequence import TimeseriesGenerator
 
-def series_to_supervised(data, n_in=1, n_out=1, dropnan=True):
+def format_data(data, n_in=1, n_out=1, dropnan=True):
     n_vars = 1 if type(data) is list else data.shape[1]
     df = pd.DataFrame(data)
     cols, names = list(), list()
     # input sequence (t-n, ... t-1)
     for i in range(n_in, 0, -1):
         cols.append(df.shift(i))
-        #cols.append(df[data.shape[0]-i:])
         names += [('var%d(t-%d)' % (j+1, i)) for j in range(n_vars)]
     # forecast sequence (t, t+1, ... t+n)
     for i in range(0, n_out):
         cols.append(df.shift(-i))
-        #cols.append(df[data.shape[0]-i:])
         if i == 0:
             names += [('var%d(t)' % (j+1)) for j in range(n_vars)]
         else:
@@ -64,7 +62,7 @@ def predict_SVR():
                             list_columns.append(meo_train_data[meo_col])
                     list_columns.append(aq_train_data[col])
                     df = pd.concat(list_columns, axis=1)
-                    y_pred = np.flipud(SVRperso(df))
+                    y_pred = SVRperso(df)
                     y_pred = np.append(col,y_pred)
                     pred.append(y_pred)
                     
@@ -95,7 +93,7 @@ def SVRperso(dataset):
     values = dataset.values
 
     # frame as supervised learning
-    reframed = series_to_supervised(values, 48, 1)
+    reframed = format_data(values, 48, 1)
     
     values = reframed.values
     scaler = StandardScaler()
