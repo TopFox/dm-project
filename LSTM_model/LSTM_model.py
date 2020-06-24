@@ -72,6 +72,8 @@ def predict_LSTM():
                     y_pred = LSTMperso(df)
                     y_pred = np.append(col,y_pred)
                     pred.append(y_pred)
+                    print(y_pred)
+                    print(vagine)
                     
         df_pred_test = pd.DataFrame(pred).T
         time_column = aq_test_data['time']

@@ -8,6 +8,7 @@ from datetime import datetime
 from sklearn.model_selection import train_test_split
 from sklearn.svm import SVR
 from sklearn import ensemble, datasets
+from sklearn.metrics import mean_squared_error
 
 #matplotlib notebook
 import matplotlib.pyplot as plt
@@ -59,7 +60,7 @@ def predict_GBRT():
 
         pred = []
         for station_name in station_names:
-            print(station_name)
+            
             for col in aq_train_data.columns:
                 splitted_col = col.split('_')
                 if station_name == splitted_col[0]:
@@ -70,10 +71,15 @@ def predict_GBRT():
                             list_columns.append(meo_train_data[meo_col])
                     list_columns.append(aq_train_data[col])
                     df = pd.concat(list_columns, axis=1)
-                    y_pred = np.flipud(GBRTperso(df))
+                    start = time.time()
+                    y_pred = GBRTperso(df)
+                    print(time.time()-start)
                     y_pred = np.append(col,y_pred)
                     pred.append(y_pred)
-                    print(vagine)
+                    
+                    
+
+                    
                     
         df_pred_test = pd.DataFrame(pred).T
         time_column = aq_test_data['time']
@@ -82,7 +88,7 @@ def predict_GBRT():
         time_column.sort_index(inplace=True) 
         df_pred_test.insert(0, 'time', time_column)
         df_pred_test.columns = df_pred_test.iloc[0]
-        df_pred_test.set_index('time').to_csv("./prediction/svr_%s_aq.csv" %(city), header=False)
+        df_pred_test.set_index('time').to_csv("./prediction/gbrt_%s_aq.csv" %(city), header=False)
 
 
 def get_stations_names(columns):
@@ -104,8 +110,6 @@ def GBRTperso(dataset):
     # frame as supervised learning
     reframed = series_to_supervised(values, 48, 1)
     
-    # We select only the last 48 hours
-    test = reframed.tail(48)
     
     values = reframed.values
     scaler = StandardScaler()
@@ -116,21 +120,21 @@ def GBRTperso(dataset):
     
     test =values[-48:,:]
     
-    n_train_hours = round(np.size(values,0)*2/3)
-    train = values#[:n_train_hours, :]
-    #valid = values[n_train_hours:, :]
+
+    train = values
+
   
     train_X, train_y = train[:, :-1], train[:, -1]
     test_X, test_y = test[:, :-1], test[:, -1]
     
-    params = {'n_estimators':500,'max_depth': 4, 'min_samples_split': 5, 'learning_rate': 0.01,'loss':'ls'}
+    params = {'n_estimators':30,'max_depth': 10, 'min_samples_split': 5, 'learning_rate': 0.1,'loss':'ls'}
    
     x= train_X
     y= train_y
 
     reg = ensemble.GradientBoostingRegressor(**params)
     reg.fit(x,y)
-    pred = reg.predict(test_X)
-    mse = mean_squared_error(test_y,pred )
-    print(mse)
-    return pred
+    data_pred = reg.predict(test_X) 
+    y_pred = scaler.inverse_transform(data_pred.reshape(-1,1)) 
+
+    return y_pred
