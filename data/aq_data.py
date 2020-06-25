@@ -220,8 +220,7 @@ def aq_data_preparation(city):
             if before_time in aq_stations_merged.index :
                 combined_step = aq_stations_merged.loc[before_time]
                 before_step = i
-                found_before = True
-                
+                found_before = True   
                 
         # We find the closest value after the missing hour
         found_after = False
